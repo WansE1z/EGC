@@ -27,6 +27,7 @@ class Laborator4 : public SimpleScene
 		glm::mat4 modelMatrix;
 		float translateX, translateY, translateZ;
 		float scaleX, scaleY, scaleZ;
-		float angularStepOX, angularStepOY, angularStepOZ;
+		float angularStepOX, angularStepOY, angularStepOZ, angJump;
+		glm::vec3 stop, center, init;
 		GLenum polygonMode;
 };

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <math.h>
 
 #include <Core/Engine.h>
 
@@ -73,9 +74,9 @@ void Laborator2::Init()
 		vector<VertexFormat> vertices
 		{
 			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(.25f, .75f, .5f)),
-			VertexFormat(glm::vec3(1, 0, 0), glm::vec3(.75f, .25f, .5f)),
-			VertexFormat(glm::vec3(0, 1, 0), glm::vec3(0, 1.f, .25f)),
-			VertexFormat(glm::vec3(0, 0, 1), glm::vec3(1.f, .5f, .5f))
+			VertexFormat(glm::vec3(0, 1, 1), glm::vec3(.75f, .25f, .5f)),
+			VertexFormat(glm::vec3(1, 1, 0), glm::vec3(0, 1.f, .25f)),
+			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(1.f, .5f, .5f))
 		};
 
 		vector<unsigned short> indices =
@@ -107,6 +108,84 @@ void Laborator2::Init()
 		};
 
 		CreateMesh("square", vertices, indices);
+
+	}
+
+	{
+		vector<VertexFormat> vertices;
+		vector<unsigned short> indices;
+		GLfloat arc;
+
+		vertices.emplace_back(glm::vec3(0, 0, 0), glm::vec3(0.5f, 1.f, 0));
+		for (GLushort i = 0; i <= 75; i++)
+		{
+			arc = 2 * M_PI * i / 75;
+			vertices.emplace_back(glm::vec3(cos(arc), sin(arc), 0), glm::vec3(0.5f, 1.f, 0));
+			indices.push_back(i);
+		}
+		indices.push_back(1);
+
+		CreateMesh("circle", vertices, indices);
+		meshes["circle"]->SetDrawMode(GL_TRIANGLE_FAN);
+	}
+
+	{
+		vector<VertexFormat> vertices
+		{
+			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0)), // negru
+			VertexFormat(glm::vec3(1, 0, 0), glm::vec3(0, .9f, .1f)), //albastru
+			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(0, 1.f, 1.f)), //cyan
+			VertexFormat(glm::vec3(0, 0, 1), glm::vec3(0.4f, 0.1f, 0)), // rosu
+			VertexFormat(glm::vec3(0, 2, 0), glm::vec3(0.9f, 0.5f, .1f)), // oranj
+			VertexFormat(glm::vec3(1, 2, 0), glm::vec3(1.f, 1.f, 0)), // galben
+			VertexFormat(glm::vec3(1, 2, 1), glm::vec3(1.f, .5f, 1.f)), // roz
+			VertexFormat(glm::vec3(0, 2, 1), glm::vec3(1.f, .5f, .5f)), // pink faded
+		};
+
+		vector<unsigned short> indices
+		{
+			0, 3, 2,
+			0, 2, 1,
+			3, 7, 4,
+			3, 4, 2,
+			7, 4, 0,
+			// ...
+		};
+
+		CreateMesh("paral", vertices, indices);
+		meshes["paral"]->SetDrawMode(GL_TRIANGLE_FAN);
+	}
+
+	{
+		vector<VertexFormat> vertices
+		{
+			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(1.f, 0.f, 0.f)), // 0
+			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0.f, 0.f, 1.f)), // 1
+			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(1.f, 1.f, 0.f)), // 2
+			
+			VertexFormat(glm::vec3(0, 1, 1), glm::vec3(1.f, 0.f, 0.f)), // 3
+			VertexFormat(glm::vec3(0, 1, 1), glm::vec3(0.f, 0.f, 1.f)), // 4
+			VertexFormat(glm::vec3(0, 1, 1), glm::vec3(1.f, 1.f, 1.f)), // 5
+
+			VertexFormat(glm::vec3(1, 1, 0), glm::vec3(0.f, 0.f, 1.f)), // 6
+			VertexFormat(glm::vec3(1, 1, 0), glm::vec3(1.f, 1.f, 0.f)), // 7
+			VertexFormat(glm::vec3(1, 1, 0), glm::vec3(1.f, 1.f, 1.f)), // 8
+
+			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(1.f, 0.f, 0.f)), // 9
+			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(1.f, 1.f, 0.f)), // 10
+			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(1.f, 1.f, 1.f)), // 11
+		};
+
+		vector<unsigned short> indices =
+		{
+			2, 7, 10,
+			4, 6, 1,
+			3, 0, 9,
+			11, 8, 5,
+			// TODO: Complete indices data
+		};
+
+		Mesh* tetraedru2 = CreateMesh("tetraedru2", vertices, indices);
 	}
 }
 
@@ -114,27 +193,36 @@ Mesh* Laborator2::CreateMesh(const char *name, const std::vector<VertexFormat> &
 {
 	unsigned int VAO = 0;
 	// TODO: Create the VAO and bind it
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &VAO); // generate vertex array object names
+	glBindVertexArray(VAO); // bind vao
 
 	// TODO: Create the VBO and bind it
 	unsigned int VBO = 0;
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &VBO); // vbo is buffer, generate buffer object names
 
 	// TODO: Send vertices data into the VBO buffer
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind the buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertices.size(), &vertices[0], GL_STATIC_DRAW); // allocate data for the buffer
+	/* void glBufferData(	GLenum target,
+	GLsizeiptr size,
+		const void* data,
+			GLenum usage);
+	*/
 
 
 	// TODO: Crete the IBO and bind it
 	unsigned int IBO = 0;
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glGenBuffers(1, &IBO); // ibo is buffer, generate buffer object names
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // bind the buffer
 
 	// TODO: Send indices data into the IBO buffer
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
-
+	/* void glBufferData(	GLenum target,
+	GLsizeiptr size,
+		const void* data,
+			GLenum usage);
+	*/
 
 	// ========================================================================
 	// This section describes how the GPU Shader Vertex Shader program receives data
@@ -196,13 +284,16 @@ void Laborator2::Update(float deltaTimeSeconds)
 	glCullFace(cullFace);
 
 	// render an object using face normals for color
-	RenderMesh(meshes["box"], shaders["VertexNormal"], glm::vec3(0, 0.5f, -1.5f), glm::vec3(0.75f));
+	//RenderMesh(meshes["box"], shaders["VertexNormal"], glm::vec3(0, 0.5f, -1.5f), glm::vec3(0.75f));
 
 	// render an object using colors from vertex
-	RenderMesh(meshes["cube1"], shaders["VertexColor"], glm::vec3(-1.5f, 0.5f, 0), glm::vec3(0.25f));
-	RenderMesh(meshes["cube3"], shaders["VertexColor"], glm::vec3(1.5f, 0.5f, 0.f), glm::vec3(0.5f));
-	RenderMesh(meshes["tetraedru"], shaders["VertexColor"], glm::vec3(0.5f, 0.5f, 0.f), glm::vec3(0.75f));
-	RenderMesh(meshes["square"], shaders["VertexColor"], glm::vec3(2.f, 0.f, .75f), glm::vec3(0.75f));
+	RenderMesh(meshes["cube1"], shaders["VertexColor"], glm::vec3(-2.f, 0.5f, 0), glm::vec3(0.5f));
+	RenderMesh(meshes["cube3"], shaders["VertexColor"], glm::vec3(-1.f, 0.5f, 0), glm::vec3(0.5f));
+	RenderMesh(meshes["tetraedru"], shaders["VertexColor"], glm::vec3(0.f, 0.5f, 0), glm::vec3(0.75f));
+	RenderMesh(meshes["square"], shaders["VertexColor"], glm::vec3(1.f, 0.5f, 0), glm::vec3(0.75f));
+	RenderMesh(meshes["circle"], shaders["VertexColor"], glm::vec3(2.f, 0.5f, 0), glm::vec3(0.5f));
+	RenderMesh(meshes["paral"], shaders["VertexColor"], glm::vec3(3.f, 0.5f, 0), glm::vec3(0.5f));
+	RenderMesh(meshes["tetraedru2"], shaders["VertexColor"], glm::vec3(4.f, 0.5f, 0), glm::vec3(0.75f));
 	
 	// Disable face culling
 	glDisable(GL_CULL_FACE);

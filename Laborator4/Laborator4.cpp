@@ -39,6 +39,8 @@ void Laborator4::Init()
 	angularStepOX = 0;
 	angularStepOY = 0;
 	angularStepOZ = 0;
+
+	angJump = 0;
 }
 
 void Laborator4::FrameStart()
@@ -74,6 +76,24 @@ void Laborator4::Update(float deltaTimeSeconds)
 	modelMatrix *= Transform3D::RotateOY(angularStepOY);
 	modelMatrix *= Transform3D::RotateOZ(angularStepOZ);
 	RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+
+	center = (init + stop) / 2.f;
+
+	angJump += deltaTimeSeconds;
+
+	if (angJump >= M_PI)
+	{
+		init = stop;
+		stop.x -= 2.f;
+		angJump = 0.f;
+	}
+
+	modelMatrix = glm::mat4(1);
+	modelMatrix *= Transform3D::Translate(center.x, center.y, center.z); // ca sa nu "sara" pe loc
+	modelMatrix *= Transform3D::RotateOZ(angJump); // rotatia
+	modelMatrix *= Transform3D::Translate(init.x - center.x, init.y - center.y, init.z - center.z); // jump-ul efectiv
+
+	RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
 }
 
 void Laborator4::FrameEnd()
@@ -83,7 +103,58 @@ void Laborator4::FrameEnd()
 
 void Laborator4::OnInputUpdate(float deltaTime, int mods)
 {
-	// TODO
+	if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		if (window->KeyHold(GLFW_KEY_W))
+		{
+			translateZ -= deltaTime;
+		} else if (window->KeyHold(GLFW_KEY_S))
+		{
+			translateZ += deltaTime;
+		} else if (window->KeyHold(GLFW_KEY_A))
+		{
+			translateX -= deltaTime;
+		} else if (window->KeyHold(GLFW_KEY_D))
+		{
+			translateX += deltaTime;
+		} else if (window->KeyHold(GLFW_KEY_R))
+		{
+			translateY += deltaTime;
+		} else if (window->KeyHold(GLFW_KEY_F))
+		{
+			translateY -= deltaTime;
+		}
+	}
+	if (window->KeyHold(GLFW_KEY_1))
+	{
+		scaleX += deltaTime;
+		scaleY += deltaTime;
+		scaleZ += deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_2))
+	{
+		scaleX -= deltaTime;
+		scaleY -= deltaTime;
+		scaleZ -= deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_3))
+	{
+		angularStepOX += deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_4))
+	{
+		angularStepOX -= deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_5))
+	{
+		angularStepOY += deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_6))
+	{
+		angularStepOY -= deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_7))
+	{
+		angularStepOZ += deltaTime;
+	} else if (window->KeyHold(GLFW_KEY_8))
+	{
+		angularStepOZ -= deltaTime;
+	}
+
 }
 
 void Laborator4::OnKeyPress(int key, int mods)
