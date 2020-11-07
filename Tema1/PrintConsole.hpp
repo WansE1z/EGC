@@ -3,6 +3,14 @@
 
 using namespace std;
 
+void addScoreBalloons(string balloonColor[3], int &score, int i) {
+	if (balloonColor[i] == "red") {
+		score += 100;
+	}
+	else if (balloonColor[i] == "yellow") {
+		score -= 50;
+	}
+}
 
 void PrintFinish(int& lifes, int& score) {
 	if (lifes == 0) {

@@ -29,18 +29,20 @@ class Tema1 : public SimpleScene
 		void OnWindowResize(int width, int height) override;
 
 	protected:
-		glm::mat3 matrixSh[2], matrixArrow, matrixPowerBar, matrixBalloon[3], matrixBow, matrixHealth[3];
+		glm::mat3 matrixSh[2], matrixArrow, matrixPowerBar, matrixBalloon[3], matrixBow, matrixHealth[3], matrixStop, matrixPowerBarOut, matrixHp;
 		float xBow = 0.f, yBow = 0.f, xArrow = 0.f,
-			xBal[3], yBal[3], xSh[2], ySh[2], yArrow = 0.f, xHealth[3] = { 150, 200, 250 },
+			xBal[3], yBal[3], xSh[2], ySh[2], yArrow = 0.f, xHealth[10] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600 },
+			xStop, yStop, distXStop, distYStop, distStop,
+			xHp, yHp, distXHp, distYHp, distHp,
 			scaleXPowerBar = 0.2f, powerArrow = 0, arrowTipInitX = 116, arrowTipInitY = 8,
 			distxBal[3], distyBal[3], distBal[3], distxSh[2], distyShuriken[2], distSh[2], distXBow[2], distYBow[2], distBow[2],
 			angularStep, angularBow, lastArrowAngle, radToGrade = 180 / M_PI;
-		int bowSize = 50, arrowSize = 6, balloonSize = 20, polyLineSize = 5, shurikenSize = 20, powerBarSize = 5, squareSize = 20,
+		int bowSize = 50, arrowSize = 6, balloonSize = 20, polyLineSize = 5, shurikenSize = 20, powerBarSize = 10, squareSize = 20, stopSize = 30, hpSize = 10,
 			balMeter, colorPicker1, colorPicker2,
 			moveBow = -1, border = 3, powerBarMargin = 100, mouseX, mouseY, mouseYFinal,
-			collisionBal[3] = { 0 }, collisionSh[2] = { 0 }, collisionBow[2] = { 0 },
-			score = 0, lifes = 3, scoreSh = 0, scoreBal = 0, seconds = 0;
-		bool leftClick = false, arrowShot = false, dissapearedBal[3], dissapearedSh[2];
+			collisionBal[3] = { 0 }, collisionSh[2] = { 0 }, collisionBow[2] = { 0 }, collisionStop, collisionHp,
+			score = 0, lifes = 3, scoreSh = 0, scoreBal = 0, seconds = 0, secondsHp = 502;
+		bool leftClick = false, arrowShot = false, dissapearedBal[3], dissapearedSh[2], dissHp, moveStopSign = true, moveHp = true;
 		std::string balloonColor[3];
 		glm::ivec2 res = window->GetResolution();
 

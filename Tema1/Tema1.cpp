@@ -1,6 +1,9 @@
 #include "Tema1.h"
 #include "Limits.hpp"
 #include "PrintConsole.hpp"
+#include "MatrixUpdate.hpp"
+#include "ArrowFunctions.hpp"
+#include "Collision.hpp"
 
 #include <vector>
 #include <iostream>
@@ -29,15 +32,18 @@ void Tema1::Init()
 	camera->Update();
 	GetCameraInput()->SetActive(false);
 
-	for (int i = 0; i < 3; i++) {
-		// coordonata x a balonului ia valori intre 20 - 620
-		xBal[i] = res.x - (rand() % 600 + 20);
-	}
+	xBal[0] = rand() % 200 + 400; // 400-600 ox
+	xBal[1] = rand() % 200 + 650; // 650-850 ox
+	xBal[2] = rand() % 200 + 900; // 900-1100 ox
 
-	for (int i = 0; i < 2; i++) {
-		// coordonata y a balonului ia valori intre 100 si 620
-		ySh[i] = (rand() % (res.y - 200) + 100);
-	}
+	ySh[0] = rand() % 200 + 100; // 100-300 oy
+	ySh[1] = rand() % 200 + 500; // 500-700 oy
+
+	xStop = rand() % 600 + 300; // 100-700 ox
+	yStop = 100;
+
+	yHp = 620;
+	xHp = rand() % 600 + 500; // 500-1100 ox
 
 	colorPicker1 = colorPicker2 = rand() % 3;
 
@@ -51,6 +57,8 @@ void Tema1::Init()
 	glm::vec3 cornerPowerBar = glm::vec3(600, -100, 0);
 	glm::vec3 cornerPowerUp = glm::vec3(600, 100, 0);
 	glm::vec3 cornerSquare = glm::vec3(0, 0, 0);
+	glm::vec3 cornerStopSign = glm::vec3(0, 0, 0);
+	glm::vec3 cornerHP = glm::vec3(0, 0, 0);
 
 	Mesh* bow = Object2D::CreateBow("bow", cornerBow, bowSize, glm::vec3(1, 1, 1), false);
 	Mesh* arrow = Object2D::CreateArrow("arrow", corner, corner2, arrowSize, glm::vec3(1, 1, 1), true);
@@ -61,6 +69,10 @@ void Tema1::Init()
 	Mesh* powerbarDown = Object2D::CreateRectangle("powerbarDown", cornerPowerBar, powerBarSize, glm::vec3(1, 1, 1), true);
 	Mesh* powerbarUp = Object2D::CreateRectangle("powerbarUp", cornerPowerUp, powerBarSize, glm::vec3(1, 1, 1), true);
 	Mesh* square = Object2D::CreateSquare("square", cornerSquare, squareSize, glm::vec3(0.8f, 0, 0), true);
+	Mesh* stopSign = Object2D::CreateStopSign("stop", cornerStopSign, stopSize, glm::vec3(0.8f, 0, 0), false);
+	Mesh* outRectUp = Object2D::CreateOutRectangle("rectoutUp", cornerPowerUp, powerBarSize, glm::vec3(1, 1, 1), false);
+	Mesh* outRectDown = Object2D::CreateOutRectangle("rectoutDown", cornerPowerBar, powerBarSize, glm::vec3(1, 1, 1), false);
+	Mesh* hpInc = Object2D::CreateHP("hp", cornerHP, hpSize, glm::vec3(0, 0.9f, 0.1f), false);
 
 	AddMeshToList(arrow);
 	AddMeshToList(bow);
@@ -71,6 +83,10 @@ void Tema1::Init()
 	AddMeshToList(powerbarDown);
 	AddMeshToList(powerbarUp);
 	AddMeshToList(square);
+	AddMeshToList(stopSign);
+	AddMeshToList(outRectUp);
+	AddMeshToList(outRectDown);
+	AddMeshToList(hpInc);
 
 }
 
@@ -91,9 +107,26 @@ void Tema1::Update(float deltaTimeSeconds)
 	mouseYFinal = -mouseY - yBow + res.y / 2;
 	angularBow = glm::atan((float)mouseYFinal / (float)mouseX);
 
-	if (arrowShot == false) {
-		lastArrowAngle = angularBow;
-		// salvez ultimul angle pentru a-l da la sageata in miscare
+	updateAngleArrow(arrowShot, lastArrowAngle, angularBow); 
+
+	// STOP SIGN
+	{
+		matrixStop = glm::mat3(1);
+		matrixStopSignUpdate(moveStopSign, deltaTimeSeconds, res, yStop, matrixStop, xStop);
+
+		RenderMesh2D(meshes["stop"], shaders["VertexColor"], matrixStop);
+	}
+
+	// HP SIGN
+	{
+		matrixHp = glm::mat3(1);
+		matrixHpUpdate(moveHp, yHp, deltaTimeSeconds, res, matrixHp, xHp, dissHp);
+		if (dissHp != true) {
+			RenderMesh2D(meshes["hp"], shaders["VertexColor"], matrixHp);
+		}
+		else {
+			secondsHpInc(secondsHp, dissHp);
+		}
 	}
 
 	// BALONUL
@@ -141,7 +174,6 @@ void Tema1::Update(float deltaTimeSeconds)
 
 	// SHURIKENUL
 	{
-
 		angularStep += deltaTimeSeconds;
 
 		for (int i = 0; i < 2; i++) {
@@ -199,6 +231,7 @@ void Tema1::Update(float deltaTimeSeconds)
 				// x-ul shuriken-ului il fac -res.x * 1.1f, ca sa apara disparut, sa reapara pe ecran
 
 				lifes--;
+				// daca este coliziune , scad o viata
 			}
 
 		}
@@ -209,18 +242,8 @@ void Tema1::Update(float deltaTimeSeconds)
 		if (leftClick == true) {
 			// daca am apasat click
 
-			arrowShot = true;
-			// arrow-ul a fost lansat
-
-			xArrow += powerArrow * deltaTimeSeconds * cos(lastArrowAngle) * radToGrade;
-			yArrow += powerArrow * deltaTimeSeconds * sin(lastArrowAngle) * radToGrade;
-			// mentin directia
-
-			arrowTipInitX += powerArrow * deltaTimeSeconds * cos(lastArrowAngle) * radToGrade;
-			arrowTipInitY += powerArrow * deltaTimeSeconds * sin(lastArrowAngle) * radToGrade;
-
-			matrixArrow *= Transform2D::Translate(xArrow, yArrow);
-			matrixArrow *= Transform2D::Rotate(lastArrowAngle);
+			arrowShotDirection(arrowShot, xArrow, yArrow, powerArrow, deltaTimeSeconds, lastArrowAngle,
+				radToGrade, arrowTipInitX, arrowTipInitY, matrixArrow);
 
 			// coliziune balon - sageata
 			for (int i = 0; i < 3; i++) {
@@ -232,12 +255,8 @@ void Tema1::Update(float deltaTimeSeconds)
 					yBal[i] = 1.2f * res.y;
 					// formula punct-cerc, a avut loc coliziune
 
-					if (balloonColor[i] == "red") {
-						score += 100;
-					}
-					else if (balloonColor[i] == "yellow") {
-						score -= 50;
-					}
+					// adun scor de la baloane (balon ROSU -> 100 / GALBEN -> -50)
+					addScoreBalloons(balloonColor, score, i);
 				}
 			}
 
@@ -255,33 +274,30 @@ void Tema1::Update(float deltaTimeSeconds)
 					score += 200;
 				}
 			}
+
+			collisionStopCalc(distXStop, distYStop, xStop, yStop, arrowTipInitX,
+				arrowTipInitY, distStop, res, stopSize, collisionStop, lifes);
+
+			collisionHpCalc(distXHp, distYHp, xHp, yHp, arrowTipInitX,
+				arrowTipInitY, distHp, res, hpSize, collisionHp, lifes, dissHp);
+
 			setLimitsArrow(xArrow, yArrow, res, leftClick, arrowShot, powerArrow, scaleXPowerBar);
 		}
 		else {
-			// nu a fost sageata trasa, miscare normala
-			matrixArrow *= Transform2D::Translate(0, yBow);
-			matrixArrow *= Transform2D::Rotate(angularBow);
-			yArrow = yBow;
-			arrowTipInitY = yBow;
-			arrowTipInitX = 0;
+			arrowNotShot(matrixArrow, yBow, angularBow, yArrow, arrowTipInitY, arrowTipInitX);
 		}
 
-		matrixPowerBar *= Transform2D::Rotate(-angularBow);
-		// powerbar-ul sa nu se roteasca ca arcul
-
-		matrixPowerBar *= Transform2D::Scale(scaleXPowerBar, 1.f);
-		// scalez powerbar-ul in functie de powerArrow
-
-		matrixPowerBar *= Transform2D::Translate(-600, 1.f);
-		// sa nu se miste powerbar-ul in dreapta
+		scaleThePowerBar(matrixPowerBar, matrixPowerBarOut, angularBow, scaleXPowerBar);
 
 		// verificare atunci cand arcul este in pozitia maxima de jos, powerbar-ul sa nu dispara de pe ecran
 		// acesta sa apara deasupra ecranului, sa fie vazut in continuare
 		if (yBow + (res.y / 2) < powerBarMargin) {
 			RenderMesh2D(meshes["powerbarUp"], shaders["VertexColor"], matrixPowerBar);
+			RenderMesh2D(meshes["rectoutUp"], shaders["VertexColor"], matrixPowerBarOut);
 		}
 		else {
 			RenderMesh2D(meshes["powerbarDown"], shaders["VertexColor"], matrixPowerBar);
+			RenderMesh2D(meshes["rectoutDown"], shaders["VertexColor"], matrixPowerBarOut);
 		}
 
 		RenderMesh2D(meshes["arrow"], shaders["VertexColor"], matrixArrow);
@@ -289,8 +305,8 @@ void Tema1::Update(float deltaTimeSeconds)
 	}
 
 	 /* 
-		 patrate sus, cand pierzi o viata, sa nu se mai randeze un patrat, reflectand
-		 pierderea unei vieti
+		 patrate sus, cand pierzi o viata, sa nu se mai randeze un patrat,
+		 reflectand pierderea unei vieti
 	 */
 	{
 		for (int i = 0; i < lifes; i++) {
@@ -299,7 +315,6 @@ void Tema1::Update(float deltaTimeSeconds)
 			RenderMesh2D(meshes["square"], shaders["VertexColor"], matrixHealth[i]);
 		}
 	}
-
 	PrintScore(seconds, score);
 	PrintFinish(lifes, score);
 }

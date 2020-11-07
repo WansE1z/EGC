@@ -82,7 +82,7 @@ void Laborator3::Update(float deltaTimeSeconds)
 
 	glm::ivec2 res = window->GetResolution();
 	 //TODO: update steps for translation, rotation, scale, in order to create animations
-	//{
+ 	//{
 	//	modelMatrix = glm::mat3(1);
 	//	modelMatrix *= Transform2D::Translate(150, 250);
 
@@ -135,7 +135,7 @@ void Laborator3::Update(float deltaTimeSeconds)
 	//	RenderMesh2D(meshes["square3"], shaders["VertexColor"], modelMatrix);
 	//}
 
-	{
+	/*{
 		modelMatrix = Transform2D::Translate(posSunX, posSunY);
 		RenderMesh2D(meshes["square4"], shaders["VertexColor"], modelMatrix);
 
@@ -154,7 +154,7 @@ void Laborator3::Update(float deltaTimeSeconds)
 		modelMatrix *= Transform2D::Scale(0.75, 0.75);
 		modelMatrix *= Transform2D::Translate(-50.f, -50.f);
 		RenderMesh2D(meshes["square3"], shaders["VertexColor"], modelMatrix);
-	}
+	}*/
 
 }
 
