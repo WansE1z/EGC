@@ -66,8 +66,8 @@ Mesh* Object2D::CreateOutRectangle(std::string name, glm::vec3 leftBottomCorner,
 	std::vector<VertexFormat> vertices =
 	{
 		VertexFormat(corner, color),
-		VertexFormat(corner + glm::vec3(10 * length * 1.13f, 0, 0), color),
-		VertexFormat(corner + glm::vec3(10 * length * 1.13f, length, 0), color),
+		VertexFormat(corner + glm::vec3(10 * length * 1.2f, 0, 0), color),
+		VertexFormat(corner + glm::vec3(10 * length * 1.2f, length, 0), color),
 		VertexFormat(corner + glm::vec3(0, length, 0), color)
 	};
 
@@ -121,8 +121,6 @@ Mesh* Object2D::CreateBow(std::string name, glm::vec3 leftBottomCorner, float le
 		vertices.emplace_back(corner + glm::vec3(sin(arc) * length, cos(arc) *length, 0), color);
 		indices.push_back(i);
 	}
-
-
 
 	Mesh* bow = new Mesh(name);
 	bow->InitFromData(vertices, indices);

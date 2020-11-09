@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <Core/Engine.h>
-#include <chrono> 
+#include <chrono>
 
 class Tema1 : public SimpleScene
 {
@@ -29,21 +29,22 @@ class Tema1 : public SimpleScene
 		void OnWindowResize(int width, int height) override;
 
 	protected:
-		glm::mat3 matrixSh[2], matrixArrow, matrixPowerBar, matrixBalloon[3], matrixBow, matrixHealth[3], matrixStop, matrixPowerBarOut, matrixHp;
+		glm::mat3 matrixSh[4], matrixArrow, matrixPowerBar, matrixBalloon[7], matrixBow, matrixHealth[10], matrixStop, matrixPowerBarOut, matrixHp;
 		float xBow = 0.f, yBow = 0.f, xArrow = 0.f,
-			xBal[3], yBal[3], xSh[2], ySh[2], yArrow = 0.f, xHealth[10] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600 },
+			xBal[7], yBal[7], xSh[4], ySh[4], yArrow = 0.f, xHealth[10] = { 150, 200, 250, 300, 350, 400, 450, 500, 550, 600 },
 			xStop, yStop, distXStop, distYStop, distStop,
 			xHp, yHp, distXHp, distYHp, distHp,
 			scaleXPowerBar = 0.2f, powerArrow = 0, arrowTipInitX = 116, arrowTipInitY = 8,
-			distxBal[3], distyBal[3], distBal[3], distxSh[2], distyShuriken[2], distSh[2], distXBow[2], distYBow[2], distBow[2],
+			distxBal[7], distyBal[7], distBal[7], distxSh[4], distySh[4], distSh[4], distXBow[4], distYBow[4], distBow[4],
 			angularStep, angularBow, lastArrowAngle, radToGrade = 180 / M_PI;
 		int bowSize = 50, arrowSize = 6, balloonSize = 20, polyLineSize = 5, shurikenSize = 20, powerBarSize = 10, squareSize = 20, stopSize = 30, hpSize = 10,
 			balMeter, colorPicker1, colorPicker2,
 			moveBow = -1, border = 3, powerBarMargin = 100, mouseX, mouseY, mouseYFinal,
-			collisionBal[3] = { 0 }, collisionSh[2] = { 0 }, collisionBow[2] = { 0 }, collisionStop, collisionHp,
-			score = 0, lifes = 3, scoreSh = 0, scoreBal = 0, seconds = 0, secondsHp = 502;
-		bool leftClick = false, arrowShot = false, dissapearedBal[3], dissapearedSh[2], dissHp, moveStopSign = true, moveHp = true;
-		std::string balloonColor[3];
+			collisionBal[7] = { 0 }, collisionSh[4] = { 0 }, collisionBow[4] = { 0 }, collisionStop, collisionHp,
+			score = 0, lifes = 3, scoreSh = 0, scoreBal = 0, seconds = 0, secondsHp = 1002,
+			nrBal = 3, nrSh = 2;
+		bool leftClick = false, arrowShot = false, dissapearedBal[7], dissapearedSh[4], dissHp, moveStopSign = true, moveHp = true;
+		std::string balloonColor[7];
 		glm::ivec2 res = window->GetResolution();
 
 };

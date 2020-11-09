@@ -1,9 +1,12 @@
 #include "Tema1.h"
-#include "Limits.hpp"
-#include "PrintConsole.hpp"
-#include "MatrixUpdate.hpp"
-#include "ArrowFunctions.hpp"
-#include "Collision.hpp"
+#include "Arrow.h"
+#include "Bow.h"
+#include "PowerBar.h"
+#include "StopSign.h"
+#include "HealthBoost.h"
+#include "GameMechanics.h"
+#include "Balloon.h"
+#include "Shuriken.h"
 
 #include <vector>
 #include <iostream>
@@ -32,12 +35,15 @@ void Tema1::Init()
 	camera->Update();
 	GetCameraInput()->SetActive(false);
 
-	xBal[0] = rand() % 200 + 400; // 400-600 ox
-	xBal[1] = rand() % 200 + 650; // 650-850 ox
-	xBal[2] = rand() % 200 + 900; // 900-1100 ox
+	for (int i = 0; i < 7; i++) {
+		xBal[i] = rand() % (res.x - 200) + 150;
+		// ox baloane intre 150 si res.x - 200
+	}
 
-	ySh[0] = rand() % 200 + 100; // 100-300 oy
-	ySh[1] = rand() % 200 + 500; // 500-700 oy
+	for (int i = 0; i < 4; i++) {
+		ySh[i] = rand() % (res.y - 200) + 100;
+		// oy shuriken-uri intre 100 si res.y - 200
+	}
 
 	xStop = rand() % 600 + 300; // 100-700 ox
 	yStop = 100;
@@ -88,6 +94,7 @@ void Tema1::Init()
 	AddMeshToList(outRectDown);
 	AddMeshToList(hpInc);
 
+	GameMechanics::Intro();
 }
 
 void Tema1::FrameStart()
@@ -103,58 +110,35 @@ void Tema1::FrameStart()
 void Tema1::Update(float deltaTimeSeconds)
 {
 	mouseX = window->GetCursorPosition().x;
+	GameMechanics::MouseXLimits(mouseX, res);
 	mouseY = window->GetCursorPosition().y;
-	mouseYFinal = -mouseY - yBow + res.y / 2;
-	angularBow = glm::atan((float)mouseYFinal / (float)mouseX);
+	angularBow = GameMechanics::calculateAngle(mouseX, mouseY, yBow, res, angularBow, mouseYFinal);
 
-	updateAngleArrow(arrowShot, lastArrowAngle, angularBow); 
+	Arrow::updateAngleArrow(arrowShot, lastArrowAngle, angularBow);
+	GameMechanics::updateDifficutly(score, nrBal, nrSh);
 
 	// STOP SIGN
 	{
-		matrixStop = glm::mat3(1);
-		matrixStopSignUpdate(moveStopSign, deltaTimeSeconds, res, yStop, matrixStop, xStop);
-
+		StopSign::stopSignMovement(moveStopSign, deltaTimeSeconds, res, yStop, matrixStop, xStop);
 		RenderMesh2D(meshes["stop"], shaders["VertexColor"], matrixStop);
 	}
-
+	
 	// HP SIGN
 	{
-		matrixHp = glm::mat3(1);
-		matrixHpUpdate(moveHp, yHp, deltaTimeSeconds, res, matrixHp, xHp, dissHp);
+		HealthBoost::hpBoostMovement(moveHp, yHp, deltaTimeSeconds, res, matrixHp, xHp, dissHp);
 		if (dissHp != true) {
 			RenderMesh2D(meshes["hp"], shaders["VertexColor"], matrixHp);
 		}
 		else {
-			secondsHpInc(secondsHp, dissHp);
+			GameMechanics::secondsHpInc(secondsHp, dissHp);
 		}
 	}
 
 	// BALONUL
 	{
-		for (int i = 0; i < 3; i++) {
-			matrixBalloon[i] = glm::mat3(1);
-			matrixBalloon[i] *= Transform2D::Translate(xBal[i], -10);
-			// pozitia initiala pe ecran
-
-			yBal[i] += 0.2f * deltaTimeSeconds * res.y;
-			matrixBalloon[i] *= Transform2D::Translate(0, yBal[i]);
-			// miscarea "in sus" a balonului
-
-			// daca exista coliziune, dispare balonul
-			if (collisionBal[i] == 1) {
-				matrixBalloon[i] *= Transform2D::Scale(0, 0);
-				collisionBal[i] = 0;
-				dissapearedBal[i] = true;
-			}
-
-			// readucerea in pozitie cand iese de pe axa oy a scenei
-			// daca balonul a fost lovit, cand revine pe ecran sa reapara
-			if (yBal[i] >= (res.y * 1.2f)) {
-				if (dissapearedBal[i] == true) {
-					dissapearedBal[i] = false;
-				}
-				yBal[i] = -10;
-			}
+		for (int i = 0; i < nrBal; i++) {
+			Balloon::balloonMovementAndDissapear(i, matrixBalloon, xBal, yBal, deltaTimeSeconds, res,
+				collisionBal, dissapearedBal);
 
 			// daca nu e lovit, render it
 			if (dissapearedBal[i] == false) {
@@ -176,32 +160,9 @@ void Tema1::Update(float deltaTimeSeconds)
 	{
 		angularStep += deltaTimeSeconds;
 
-		for (int i = 0; i < 2; i++) {
-			matrixSh[i] = glm::mat3(1);
-			matrixSh[i] *= Transform2D::Translate(res.x, ySh[i]);
-
-			// valoare de se scade mereu din x, ca sa mearga pe orizontala invers
-			xSh[i] -= 0.2f * deltaTimeSeconds * res.x;
-			matrixSh[i] *= Transform2D::Translate(xSh[i], 0);
-
-			// daca exista coliziune intre sageata-shuriken sau arc-shuriken, acesta dispare
-			if (collisionSh[i] == 1 || collisionBow[i] == 1) {
-				matrixSh[i] *= Transform2D::Scale(0, 0);
-				collisionSh[i] = 0;
-				collisionBow[i] = 0;
-				dissapearedSh[i] = true;
-			}
-
-			// daca iese din ecran, sa revina
-			if (xSh[i] < -res.x * 1.1f) {
-				if (dissapearedSh[i] == true) {
-					dissapearedSh[i] = false;
-				}
-				xSh[i] = res.x * 0.1f;
-			}
-
-			// sa se invarta in timp ce se misca pe orizontala
-			matrixSh[i] *= Transform2D::Rotate(angularStep);
+		for (int i = 0; i < nrSh; i++) {
+			Shuriken::shurikenMovementAndDissapear(i, matrixSh, res, xSh, ySh, deltaTimeSeconds, collisionSh, collisionBow,
+				dissapearedSh, angularStep);
 
 			// daca nu a disparut, il randez, altfel, nu
 			if (dissapearedSh[i] == false) {
@@ -215,79 +176,49 @@ void Tema1::Update(float deltaTimeSeconds)
 		matrixBow = matrixArrow = matrixPowerBar = glm::mat3(1);
 		matrixArrow = matrixBow *= Transform2D::Translate(0, res.y / 2);
 
-		BowMoveUpDown(moveBow, yBow, bowSize, border, res);
+		Bow::BowMoveUpDown(moveBow, yBow, bowSize, border, res);
 
 		matrixBow *= Transform2D::Translate(0, yBow);
 		matrixBow *= Transform2D::Rotate(angularBow);
 		
 		// coliziune bow - shuriken
-		for (int i = 0; i < 2; i++) {
-			distXBow[i] = res.x - xBow + xSh[i] - bowSize/2;
-			distYBow[i] = yBow + res.y/2 - ySh[i];
-			distBow[i] = sqrt((distXBow[i] * distXBow[i]) + (distYBow[i] * distYBow[i]));
-			if (distBow[i] <= shurikenSize + bowSize) {
-				collisionBow[i] = 1;
-				xSh[i] = -res.x * 1.1f;
-				// x-ul shuriken-ului il fac -res.x * 1.1f, ca sa apara disparut, sa reapara pe ecran
-
-				lifes--;
-				// daca este coliziune , scad o viata
-			}
-
-		}
+		Bow::CheckCollisionBow(nrSh, res, distXBow, distYBow, xBow, yBow, xSh, ySh, bowSize, distBow,
+			shurikenSize, collisionBow, lifes);
 
 		// powerbar foloseste aceeasi matrice ca bow-ul, doar ca nu se roteste, ramane orizontal
 		matrixPowerBar = matrixBow;
 
 		if (leftClick == true) {
-			// daca am apasat click
 
-			arrowShotDirection(arrowShot, xArrow, yArrow, powerArrow, deltaTimeSeconds, lastArrowAngle,
+			// daca am apasat click
+			Arrow::arrowShotDirection(arrowShot, xArrow, yArrow, powerArrow, deltaTimeSeconds, lastArrowAngle,
 				radToGrade, arrowTipInitX, arrowTipInitY, matrixArrow);
 
 			// coliziune balon - sageata
-			for (int i = 0; i < 3; i++) {
-				distxBal[i] = arrowTipInitX - xBal[i];
-				distyBal[i] = arrowTipInitY - yBal[i] + res.y / 2 + balloonSize + 4;
-				distBal[i] = sqrt((distxBal[i] * distxBal[i]) + (distyBal[i] * distyBal[i]));
-				if (distBal[i] <= balloonSize) {
-					collisionBal[i] = 1;
-					yBal[i] = 1.2f * res.y;
-					// formula punct-cerc, a avut loc coliziune
-
-					// adun scor de la baloane (balon ROSU -> 100 / GALBEN -> -50)
-					addScoreBalloons(balloonColor, score, i);
-				}
-			}
+			Balloon::checkCollisionBalloon(nrBal, distxBal, distyBal, distBal, arrowTipInitX, arrowTipInitY, xBal, yBal,
+				res, balloonSize, collisionBal, balloonColor, score);
 
 			// coliziune shuriken - sageata
-			for (int i = 0; i < 2; i++) {
-				distxSh[i] = arrowTipInitX - res.x - xSh[i];
-				distyShuriken[i] = arrowTipInitY - ySh[i] + res.y / 2;
-				distSh[i] = sqrt((distxSh[i] * distxSh[i]) + (distyShuriken[i] * distyShuriken[i]));
+			Shuriken::checkCollisionShuriken(nrSh, distxSh, distySh, distSh, arrowTipInitX, arrowTipInitY, res, xSh, ySh,
+				shurikenSize, collisionSh, score);
 
-				if (distSh[i] <= shurikenSize) {
-					collisionSh[i] = 1;
-					xSh[i] = -res.x * 1.1f;
-					// formula punct-cerc, a avut loc coliziune
-
-					score += 200;
-				}
-			}
-
-			collisionStopCalc(distXStop, distYStop, xStop, yStop, arrowTipInitX,
+			// coliziune stopsign - sageata
+			StopSign::collisionStopCalc(distXStop, distYStop, xStop, yStop, arrowTipInitX,
 				arrowTipInitY, distStop, res, stopSize, collisionStop, lifes);
 
-			collisionHpCalc(distXHp, distYHp, xHp, yHp, arrowTipInitX,
+			// coliziune healthboost - sageata
+			HealthBoost::collisionHpCalc(distXHp, distYHp, xHp, yHp, arrowTipInitX,
 				arrowTipInitY, distHp, res, hpSize, collisionHp, lifes, dissHp);
 
-			setLimitsArrow(xArrow, yArrow, res, leftClick, arrowShot, powerArrow, scaleXPowerBar);
+			// verific cand sageata iese din ecran, sa revina pe arc sau cand e viteza foarte mica, sa se respawneze
+			Arrow::setLimitsArrow(xArrow, yArrow, res, leftClick, arrowShot, powerArrow, scaleXPowerBar);
 		}
 		else {
-			arrowNotShot(matrixArrow, yBow, angularBow, yArrow, arrowTipInitY, arrowTipInitX);
+			// daca sageata nu este trasa
+			Arrow::arrowNotShot(matrixArrow, yBow, angularBow, yArrow, arrowTipInitY, arrowTipInitX);
 		}
-
-		scaleThePowerBar(matrixPowerBar, matrixPowerBarOut, angularBow, scaleXPowerBar);
+		// scalez powerbar-ul sa se mareasca cand se tine apasat click
+		PowerBar::scaleThePowerBar(matrixPowerBar, matrixPowerBarOut, angularBow, scaleXPowerBar);
 
 		// verificare atunci cand arcul este in pozitia maxima de jos, powerbar-ul sa nu dispara de pe ecran
 		// acesta sa apara deasupra ecranului, sa fie vazut in continuare
@@ -310,13 +241,18 @@ void Tema1::Update(float deltaTimeSeconds)
 	 */
 	{
 		for (int i = 0; i < lifes; i++) {
-			matrixHealth[i] = glm::mat3(1);
-			matrixHealth[i] *= Transform2D::Translate(xHealth[i], res.y - 40);
+			HealthBoost::renderHealth(i, lifes, matrixHealth, xHealth, res);
 			RenderMesh2D(meshes["square"], shaders["VertexColor"], matrixHealth[i]);
 		}
 	}
-	PrintScore(seconds, score);
-	PrintFinish(lifes, score);
+	GameMechanics::PrintScore(seconds, score);
+	GameMechanics::PrintFinish(lifes, score);
+	// BONUS:
+	// Am adaugat dificultate, cand se depaseste scorul de 2000, sunt 5 baloane si 3 shuriken-uri
+	// Cand scor >= 4000, 7 baloane si 4 shuriken-uri
+	// Health boost, iti da o viata (hexagon verde)
+	// Stop sign, iti ia toate vietiile (te omoara)
+	// Apar vietiile sus in stanga, ca reper
 }
 
 void Tema1::FrameEnd()
@@ -325,13 +261,25 @@ void Tema1::FrameEnd()
 
 void Tema1::OnInputUpdate(float deltaTime, int mods)
 {
+	// daca se tine apasat pe W, se poate tine apasat si click, de aceea maresc si powerArrow-ul
 	if (window->KeyHold(GLFW_KEY_W)) {
 		moveBow = 0;
+		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+		}
 	}
+
+	// daca se tine apasat pe S, se poate tine apasat si click, de aceea maresc si powerArrow-ul
 	else if (window->KeyHold(GLFW_KEY_S)) {
 		moveBow = 1;
-	} else if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
-		setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+		}
+	} 
+	
+	// daca totusi nu tin apasat pe w sau s, pot tine apasat pe click, marind powerArrow-ul
+	else if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+		Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
 	}
 }
 
