@@ -74,6 +74,22 @@ void Laborator5::Update(float deltaTimeSeconds)
 		RenderMesh(meshes["box"], shaders["Simple"], modelMatrix);
 	}
 
+	{
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(5, 0.5f, 0));
+		modelMatrix = glm::rotate(modelMatrix, RADIANS(75.0f), glm::vec3(0, 0, 1));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, 2.20));
+		RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+	}
+
+	{
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(-5, 0.5f, 0));
+		modelMatrix = glm::rotate(modelMatrix, RADIANS(45.0f), glm::vec3(0, 0, 1));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 0.5, 1));
+		RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+	}
+
 	// Render the camera target. Useful for understanding where is the rotation point in Third-person camera movement
 	if (renderCameraTarget)
 	{
@@ -115,27 +131,51 @@ void Laborator5::OnInputUpdate(float deltaTime, int mods)
 
 		if (window->KeyHold(GLFW_KEY_W)) {
 			// TODO : translate the camera forward
+			camera->TranslateForward(deltaTime * cameraSpeed);
 		}
 
 		if (window->KeyHold(GLFW_KEY_A)) {
 			// TODO : translate the camera to the left
+			camera->TranslateRight(-deltaTime * cameraSpeed);
 		}
 
 		if (window->KeyHold(GLFW_KEY_S)) {
 			// TODO : translate the camera backwards
+			camera->TranslateForward(-deltaTime * cameraSpeed);
 		}
 
 		if (window->KeyHold(GLFW_KEY_D)) {
 			// TODO : translate the camera to the right
+			camera->TranslateRight(deltaTime * cameraSpeed);
 		}
 
 		if (window->KeyHold(GLFW_KEY_Q)) {
 			// TODO : translate the camera down
+			camera->TranslateUpword(-deltaTime * cameraSpeed);
 		}
 
 		if (window->KeyHold(GLFW_KEY_E)) {
 			// TODO : translate the camera up
+			camera->TranslateUpword(deltaTime * cameraSpeed);
 		}
+	}
+	if (window->KeyHold(GLFW_KEY_1)) {
+		fov += deltaTime * 1.0f;
+		projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);
+	}
+	if (window->KeyHold(GLFW_KEY_2)) {
+		fov -= deltaTime * 1.0f;
+		projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);
+	}
+	if (window->KeyHold(GLFW_KEY_3)) {
+		latime += deltaTime * 1.0f;
+		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
+
+	}
+	if (window->KeyHold(GLFW_KEY_4)) {
+		latime -= deltaTime * 1.0f;
+		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
+
 	}
 }
 
@@ -145,6 +185,14 @@ void Laborator5::OnKeyPress(int key, int mods)
 	if (key == GLFW_KEY_T)
 	{
 		renderCameraTarget = !renderCameraTarget;
+	}
+	else if (key == GLFW_KEY_O) {
+
+
+		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
+	}
+	else if (key == GLFW_KEY_P) {
+		projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);
 	}
 }
 
@@ -162,16 +210,26 @@ void Laborator5::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 		float sensivityOX = 0.001f;
 		float sensivityOY = 0.001f;
 
-		if (window->GetSpecialKeyState() == 0) {
+		if (window->GetSpecialKeyState() == 0)
+		{
 			renderCameraTarget = false;
-			// TODO : rotate the camera in First-person mode around OX and OY using deltaX and deltaY
-			// use the sensitivity variables for setting up the rotation speed
+			// Rotate the camera in First-person mode around OX and OY using deltaX and deltaY
+			// Use the sensitivity variables for setting up the rotation speed
+			// atunci cand rotim pe axa orizontala miscam mouse-ul sus jos
+			// atunci cand rotim pe axa verticala miscamm mouse-ul stanga dreapta
+			camera->RotateFirstPerson_OX(sensivityOX * -deltaY);
+			camera->RotateFirstPerson_OY(sensivityOY * -deltaX);
 		}
 
-		if (window->GetSpecialKeyState() && GLFW_MOD_CONTROL) {
+		if (window->GetSpecialKeyState() && GLFW_MOD_CONTROL)
+		{
 			renderCameraTarget = true;
-			// TODO : rotate the camera in Third-person mode around OX and OY using deltaX and deltaY
-			// use the sensitivity variables for setting up the rotation speed
+			// Rotate the camera in Third-person mode around OX and OY using deltaX and deltaY
+			// Use the sensitivity variables for setting up the rotation speed
+			// atunci cand rotim pe axa orizontala miscam mouse-ul sus jos
+			// atunci cand rotim pe axa verticala miscamm mouse-ul stanga dreapta
+			camera->RotateThirdPerson_OX(sensivityOX * -deltaY);
+			camera->RotateThirdPerson_OY(sensivityOY * -deltaX);
 		}
 
 	}

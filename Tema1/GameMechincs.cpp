@@ -6,6 +6,8 @@ void GameMechanics::Intro() {
 	cout << "--------------------------------------  START GAME --------------------------------------" << endl;
 }
 
+
+
 void GameMechanics::MouseXLimits(int& mouseX, glm::ivec2& res)
 {
 	if (mouseX > res.x) {
@@ -16,12 +18,68 @@ void GameMechanics::MouseXLimits(int& mouseX, glm::ivec2& res)
 	}
 }
 
-float GameMechanics::calculateAngle(int& mouseX, int& mouseY, float& yBow, glm::ivec2& res, float &angularBow,
-	int &mouseYFinal)
+float GameMechanics::calculateAngle(int& mouseX, int& mouseY, float& yBow, glm::ivec2& res, float& angularBow,
+	int& mouseYFinal, WindowObject* window)
 {
+	mouseX = window->GetCursorPosition().x;
+	mouseY = window->GetCursorPosition().y;
+	GameMechanics::MouseXLimits(mouseX, res);
 	mouseYFinal = -mouseY - yBow + res.y / 2;
 	angularBow = glm::atan((float)mouseYFinal / (float)mouseX);
 	return angularBow;
+}
+
+void GameMechanics::setInitialPositions(float* xBal, float* ySh, glm::ivec2& res, float& xStop, float& yStop, float& xHp, float& yHp, int& cp1, int& cp2)
+{
+	for (int i = 0; i < 7; i++) {
+		xBal[i] = rand() % (res.x - 200) + 150;
+		// ox baloane intre 150 si res.x - 200
+	}
+
+	for (int i = 0; i < 4; i++) {
+		ySh[i] = rand() % (res.y - 200) + 100;
+		// oy shuriken-uri intre 100 si res.y - 200
+	}
+
+	xStop = rand() % 600 + 300; // 100-700 ox
+	yStop = 100;
+
+	yHp = 620;
+	xHp = rand() % 600 + 500; // 500-1100 ox
+
+	cp1 = cp2 = rand() % 3;
+}
+
+void GameMechanics::holdWSClick(WindowObject* window, bool& arrowShot, float& powerArrow, float& scaleXPowerBar, int& moveBow)
+{
+	if (window->KeyHold(GLFW_KEY_W)) {
+		moveBow = 0;
+		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+		}
+	}
+
+	// daca se tine apasat pe S, se poate tine apasat si click, de aceea maresc si powerArrow-ul
+	else if (window->KeyHold(GLFW_KEY_S)) {
+		moveBow = 1;
+		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+		}
+	}
+
+	// daca totusi nu tin apasat pe w sau s, pot tine apasat pe click, marind powerArrow-ul
+	else if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
+		Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
+	}
+}
+
+void GameMechanics::holdMouseUpdate(bool& arrowShot, int& button, bool& leftClick, bool statement)
+{
+	if (arrowShot == false) {
+		if (button == 1) {
+			leftClick = statement;
+		}
+	}
 }
 
 void GameMechanics::secondsHpInc(int& secondsHp, bool& dissHp) {

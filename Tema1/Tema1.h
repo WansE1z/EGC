@@ -17,16 +17,10 @@ class Tema1 : public SimpleScene
 	private:
 		void FrameStart() override;
 		void Update(float deltaTimeSeconds) override;
-		void FrameEnd() override;
 
 		void OnInputUpdate(float deltaTime, int mods) override;
-		void OnKeyPress(int key, int mods) override;
-		void OnKeyRelease(int key, int mods) override;
-		void OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY) override;
 		void OnMouseBtnPress(int mouseX, int mouseY, int button, int mods) override;
 		void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
-		void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
-		void OnWindowResize(int width, int height) override;
 
 	protected:
 		glm::mat3 matrixSh[4], matrixArrow, matrixPowerBar, matrixBalloon[7], matrixBow, matrixHealth[10], matrixStop, matrixPowerBarOut, matrixHp;
@@ -36,7 +30,7 @@ class Tema1 : public SimpleScene
 			xHp, yHp, distXHp, distYHp, distHp,
 			scaleXPowerBar = 0.2f, powerArrow = 0, arrowTipInitX = 116, arrowTipInitY = 8,
 			distxBal[7], distyBal[7], distBal[7], distxSh[4], distySh[4], distSh[4], distXBow[4], distYBow[4], distBow[4],
-			angularStep, angularBow, lastArrowAngle, radToGrade = 180 / M_PI;
+			angularStep, angleBow, lastArrowAngle, radToGrade = 180 / M_PI;
 		int bowSize = 50, arrowSize = 6, balloonSize = 20, polyLineSize = 5, shurikenSize = 20, powerBarSize = 10, squareSize = 20, stopSize = 30, hpSize = 10,
 			balMeter, colorPicker1, colorPicker2,
 			moveBow = -1, border = 3, powerBarMargin = 100, mouseX, mouseY, mouseYFinal,

@@ -1,6 +1,11 @@
 #include "Bow.h"
 
-void Bow::BowMoveUpDown(int& moveBow, float& yBow, int& bowSize, int& border, glm::ivec2& res) {
+void Bow::BowMoveUpDown(int& moveBow, float& yBow, int& bowSize, int& border, glm::ivec2& res,
+	glm::mat3 &matrixBow, glm::mat3 &matrixArrow, glm::mat3 &matrixPowerBar, float &angularBow) {
+
+	matrixBow = matrixArrow = matrixPowerBar = glm::mat3(1);
+	matrixArrow = matrixBow *= Transform2D::Translate(0, res.y / 2);
+
 	// miscare W,S || W = 0 , S = 1
 	if (moveBow == 0) {
 
@@ -26,6 +31,12 @@ void Bow::BowMoveUpDown(int& moveBow, float& yBow, int& bowSize, int& border, gl
 			moveBow = -1;
 		}
 	}
+
+	matrixBow *= Transform2D::Translate(0, yBow);
+	matrixBow *= Transform2D::Rotate(angularBow);
+
+	// powerbar foloseste aceeasi matrice ca bow-ul, doar ca nu se roteste, ramane orizontal
+	matrixPowerBar = matrixBow;
 }
 
 void Bow::CheckCollisionBow(int &nrSh, glm::ivec2 &res, float *distXBow, float *distYBow,

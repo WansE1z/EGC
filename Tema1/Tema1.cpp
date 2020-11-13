@@ -34,24 +34,7 @@ void Tema1::Init()
 	camera->SetRotation(glm::vec3(0, 0, 0));
 	camera->Update();
 	GetCameraInput()->SetActive(false);
-
-	for (int i = 0; i < 7; i++) {
-		xBal[i] = rand() % (res.x - 200) + 150;
-		// ox baloane intre 150 si res.x - 200
-	}
-
-	for (int i = 0; i < 4; i++) {
-		ySh[i] = rand() % (res.y - 200) + 100;
-		// oy shuriken-uri intre 100 si res.y - 200
-	}
-
-	xStop = rand() % 600 + 300; // 100-700 ox
-	yStop = 100;
-
-	yHp = 620;
-	xHp = rand() % 600 + 500; // 500-1100 ox
-
-	colorPicker1 = colorPicker2 = rand() % 3;
+	GameMechanics::setInitialPositions(xBal, ySh, res, xStop, yStop, xHp, yHp, colorPicker1, colorPicker2);
 
 	glm::vec3 corner = glm::vec3(70, 0, 0);
 	glm::vec3 corner2 = glm::vec3(110, 2, 0);
@@ -109,12 +92,9 @@ void Tema1::FrameStart()
 
 void Tema1::Update(float deltaTimeSeconds)
 {
-	mouseX = window->GetCursorPosition().x;
-	GameMechanics::MouseXLimits(mouseX, res);
-	mouseY = window->GetCursorPosition().y;
-	angularBow = GameMechanics::calculateAngle(mouseX, mouseY, yBow, res, angularBow, mouseYFinal);
+	angleBow = GameMechanics::calculateAngle(mouseX, mouseY, yBow, res, angleBow, mouseYFinal, window);
 
-	Arrow::updateAngleArrow(arrowShot, lastArrowAngle, angularBow);
+	Arrow::updateAngleArrow(arrowShot, lastArrowAngle, angleBow);
 	GameMechanics::updateDifficutly(score, nrBal, nrSh);
 
 	// STOP SIGN
@@ -173,20 +153,12 @@ void Tema1::Update(float deltaTimeSeconds)
 
 	// ARCUL
 	{
-		matrixBow = matrixArrow = matrixPowerBar = glm::mat3(1);
-		matrixArrow = matrixBow *= Transform2D::Translate(0, res.y / 2);
-
-		Bow::BowMoveUpDown(moveBow, yBow, bowSize, border, res);
-
-		matrixBow *= Transform2D::Translate(0, yBow);
-		matrixBow *= Transform2D::Rotate(angularBow);
+		// initializare si miscarea arcului
+		Bow::BowMoveUpDown(moveBow, yBow, bowSize, border, res, matrixBow, matrixArrow, matrixPowerBar, angleBow);
 		
 		// coliziune bow - shuriken
 		Bow::CheckCollisionBow(nrSh, res, distXBow, distYBow, xBow, yBow, xSh, ySh, bowSize, distBow,
 			shurikenSize, collisionBow, lifes);
-
-		// powerbar foloseste aceeasi matrice ca bow-ul, doar ca nu se roteste, ramane orizontal
-		matrixPowerBar = matrixBow;
 
 		if (leftClick == true) {
 
@@ -215,10 +187,10 @@ void Tema1::Update(float deltaTimeSeconds)
 		}
 		else {
 			// daca sageata nu este trasa
-			Arrow::arrowNotShot(matrixArrow, yBow, angularBow, yArrow, arrowTipInitY, arrowTipInitX);
+			Arrow::arrowNotShot(matrixArrow, yBow, angleBow, yArrow, arrowTipInitY, arrowTipInitX);
 		}
 		// scalez powerbar-ul sa se mareasca cand se tine apasat click
-		PowerBar::scaleThePowerBar(matrixPowerBar, matrixPowerBarOut, angularBow, scaleXPowerBar);
+		PowerBar::scaleThePowerBar(matrixPowerBar, matrixPowerBarOut, angleBow, scaleXPowerBar);
 
 		// verificare atunci cand arcul este in pozitia maxima de jos, powerbar-ul sa nu dispara de pe ecran
 		// acesta sa apara deasupra ecranului, sa fie vazut in continuare
@@ -255,74 +227,21 @@ void Tema1::Update(float deltaTimeSeconds)
 	// Apar vietiile sus in stanga, ca reper
 }
 
-void Tema1::FrameEnd()
-{
-}
 
 void Tema1::OnInputUpdate(float deltaTime, int mods)
 {
 	// daca se tine apasat pe W, se poate tine apasat si click, de aceea maresc si powerArrow-ul
-	if (window->KeyHold(GLFW_KEY_W)) {
-		moveBow = 0;
-		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
-			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
-		}
-	}
-
-	// daca se tine apasat pe S, se poate tine apasat si click, de aceea maresc si powerArrow-ul
-	else if (window->KeyHold(GLFW_KEY_S)) {
-		moveBow = 1;
-		if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
-			Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
-		}
-	} 
-	
-	// daca totusi nu tin apasat pe w sau s, pot tine apasat pe click, marind powerArrow-ul
-	else if (window->MouseHold(GLFW_MOUSE_BUTTON_LEFT)) {
-		Arrow::setLimitsPower(arrowShot, powerArrow, scaleXPowerBar);
-	}
-}
-
-void Tema1::OnKeyPress(int key, int mods)
-{
-
-}
-
-void Tema1::OnKeyRelease(int key, int mods)
-{
-	// add key release event
-}
-
-void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
-{
-
+	GameMechanics::holdWSClick(window, arrowShot, powerArrow, scaleXPowerBar, moveBow);
 }
 
 void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
-	if (arrowShot == false) {
-		// daca nu e trasa sageata, se poate trage
-		if (button == 1) {
-			leftClick = false;
-		}
-	}
+	// daca nu e trasa sageata, se poate trage
+	GameMechanics::holdMouseUpdate(arrowShot, button, leftClick, false);
 }
 
 void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
-	if (arrowShot == false) {
-		// daca nu e trasa sageata, si s-a adunat power, se trage
-		if (button == 1) {
-			leftClick = true;
-		}
-	}
-}
-
-
-void Tema1::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
-{
-}
-
-void Tema1::OnWindowResize(int width, int height)
-{
+	// daca nu e trasa sageata, se poate trage si dau increase si la powerArrow
+	GameMechanics::holdMouseUpdate(arrowShot, button, leftClick, true);
 }

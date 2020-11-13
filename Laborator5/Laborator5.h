@@ -30,4 +30,5 @@ class Laborator5 : public SimpleScene
 		Laborator::Camera *camera;
 		glm::mat4 projectionMatrix;
 		bool renderCameraTarget;
+		float fov = RADIANS(75.0f), latime = 3.0f;
 };
