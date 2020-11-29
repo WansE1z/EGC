@@ -13,7 +13,7 @@ namespace Laborator
 				forward = glm::vec3(0, 0, -1);
 				up		= glm::vec3(0, 1, 0);
 				right	= glm::vec3(1, 0, 0);
-				distanceToTarget = 2;
+				distanceToTarget = 6;
 			}
 
 			Camera(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
@@ -71,7 +71,7 @@ namespace Laborator
 				// Use glm::rotate()
 
 				// rotim forward in jurul lui right
-				forward = glm::normalize(glm::rotate(glm::mat4(1.f), angle, right) * glm::vec4(forward, 1));
+				forward = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.f), angle, right) * glm::vec4(forward, 1)));
 				up = glm::cross(right, forward);
 			}
 
@@ -80,8 +80,8 @@ namespace Laborator
 				// Compute the new "forward", "up" and "right" vectors
 				// Don't forget to normalize the vectors
 				// Use glm::rotate()
-				forward = glm::normalize(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(forward, 1));
-				right = glm::normalize(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1));
+				forward = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(forward, 1)));
+				right = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1)));
 				up = glm::cross(right, forward);
 			}
 
@@ -89,7 +89,7 @@ namespace Laborator
 			{
 				// Compute the new Right and Up, Forward stays the same
 				// Don't forget to normalize the vectors
-				right = glm::normalize(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1));
+				right = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.f), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1)));
 				up = glm::cross(right, forward);
 			}
 

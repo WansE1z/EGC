@@ -85,7 +85,7 @@ void Tema1::FrameStart()
 	// clears the color buffer (using the previously set color) and depth buffer
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-;
+
 	// sets the screen area where to draw
 	glViewport(0, 0, res.x, res.y);
 }

@@ -30,7 +30,7 @@ class Tema1 : public SimpleScene
 			xHp, yHp, distXHp, distYHp, distHp,
 			scaleXPowerBar = 0.2f, powerArrow = 0, arrowTipInitX = 116, arrowTipInitY = 8,
 			distxBal[7], distyBal[7], distBal[7], distxSh[4], distySh[4], distSh[4], distXBow[4], distYBow[4], distBow[4],
-			angularStep, angleBow, lastArrowAngle, radToGrade = 180 / M_PI;
+			angularStep, angleBow, lastArrowAngle, radToGrade = 180 / M_PI, scaleX[4] = { 1 }, scaleY[4] = { 1 };
 		int bowSize = 50, arrowSize = 6, balloonSize = 20, polyLineSize = 5, shurikenSize = 20, powerBarSize = 10, squareSize = 20, stopSize = 30, hpSize = 10,
 			balMeter, colorPicker1, colorPicker2,
 			moveBow = -1, border = 3, powerBarMargin = 100, mouseX, mouseY, mouseYFinal,

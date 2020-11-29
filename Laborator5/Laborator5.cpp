@@ -169,13 +169,11 @@ void Laborator5::OnInputUpdate(float deltaTime, int mods)
 	}
 	if (window->KeyHold(GLFW_KEY_3)) {
 		latime += deltaTime * 1.0f;
-		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
-
+		projectionMatrix = glm::ortho(-latime, latime, -4.5f, 4.5f, 0.01f, 200.0f);
 	}
 	if (window->KeyHold(GLFW_KEY_4)) {
 		latime -= deltaTime * 1.0f;
-		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
-
+		projectionMatrix = glm::ortho(-latime, latime, -4.5f, 4.5f, 0.01f, 200.0f);
 	}
 }
 
@@ -187,9 +185,7 @@ void Laborator5::OnKeyPress(int key, int mods)
 		renderCameraTarget = !renderCameraTarget;
 	}
 	else if (key == GLFW_KEY_O) {
-
-
-		projectionMatrix = glm::ortho(-6.0f, latime, -4.5f, 4.0f, 0.01f, 200.0f);
+		projectionMatrix = glm::ortho(-latime, latime, -4.5f, 4.5f, 0.01f, 200.0f);
 	}
 	else if (key == GLFW_KEY_P) {
 		projectionMatrix = glm::perspective(fov, window->props.aspectRatio, 0.01f, 200.0f);

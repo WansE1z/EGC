@@ -161,33 +161,6 @@ void Laborator6::FrameEnd()
 	DrawCoordinatSystem();
 }
 
-void Laborator6::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelMatrix)
-{
-	if (!mesh || !shader || !shader->GetProgramID())
-		return;
-
-	// render an object using the specified shader and the specified position
-	glUseProgram(shader->program);
-
-	// TODO : get shader location for uniform mat4 "Model"
-
-	// TODO : set shader uniform "Model" to modelMatrix
-
-	// TODO : get shader location for uniform mat4 "View"
-
-	// TODO : set shader uniform "View" to viewMatrix
-	glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
-
-	// TODO : get shader location for uniform mat4 "Projection"
-
-	// TODO : set shader uniform "Projection" to projectionMatrix
-	glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
-
-	// Draw the object
-	glBindVertexArray(mesh->GetBuffers()->VAO);
-	glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
-}
-
 // Documentation for the input functions can be found in: "/Source/Core/Window/InputController.h" or
 // https://github.com/UPB-Graphics/Framework-EGC/blob/master/Source/Core/Window/InputController.h
 
@@ -228,3 +201,45 @@ void Laborator6::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 void Laborator6::OnWindowResize(int width, int height)
 {
 }
+
+void Laborator6::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
+{
+	if (!mesh || !shader || !shader->GetProgramID())
+	{
+		return;
+	}
+
+	// Render an object using the specified shader and the specified position
+	glUseProgram(shader->program);
+
+	// Get shader location for uniform mat4 "Model"
+	GLint modelLocation = glGetUniformLocation(shader->GetProgramID(), "Model");
+
+	// Set shader uniform "Model" to modelMatrix
+	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	// Get shader location for uniform mat4 "View"
+	GLint viewLocation = glGetUniformLocation(shader->GetProgramID(), "View");
+
+	// Set shader uniform "View" to viewMatrix
+	glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	// Get shader location for uniform mat4 "Projection"
+	GLint projLocation = glGetUniformLocation(shader->GetProgramID(), "Projection");
+
+	// Set shader uniform "Projection" to projectionMatrix
+	glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+	glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+	// Get shader location for "Time"
+	GLint timeLocation = glGetUniformLocation(shader->GetProgramID(), "Time");
+
+	// Set shader uniform "Time" to elapsed time
+	glUniform1f(timeLocation, (GLfloat)Engine::GetElapsedTime());
+
+	// Draw the object
+	glBindVertexArray(mesh->GetBuffers()->VAO);
+	glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
+}
+
