@@ -6,6 +6,7 @@
 using namespace std;
 
 namespace GameMechanics {
+	void introGame();
 	void timeForSpeedPowerup(bool& speedy, int& secondsSpeed);
 	void movementCameraObjects(Sphere& sphere, Gas& gas, float& deltaTimeSeconds, float& speed, MyCamera* camera);
 	void changeSpeed(bool& speedy, int& secondsSpeed, float& speed, WindowObject* window);

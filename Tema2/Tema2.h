@@ -15,9 +15,9 @@ class Tema2 : public SimpleScene
 		Tema2();
 		~Tema2();
 		void Init() override;
-		Plank plank[24];
-		Plank plank2[24];
-		Plank invizPlank[24];
+		Plank plank[36];
+		Plank plank2[36];
+		Plank invizPlank[36];
 		Sphere sphere;
 		Gas gas;
 
@@ -41,7 +41,7 @@ class Tema2 : public SimpleScene
 		float angJump = 0, speed = 1.f;
 		int random, nrPlanks = 0, seconds = 1, random2, random3, secondsSpeed = 1, secondsGas = 1;
 		glm::ivec2 res = window->GetResolution();
-		glm::mat4 modelPlank[24], modelPlank2[24], modelSphere, projectionMatrix, modelGas, modelInnerGas;
+		glm::mat4 modelPlank[36], modelPlank2[36], modelSphere, projectionMatrix, modelGas, modelInnerGas;
 		glm::vec3 lastPosCamera;
 		MyCamera* camera;
 

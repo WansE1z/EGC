@@ -25,5 +25,5 @@ public:
 namespace PlankFunc {
 	void initPlanks(Plank* plank, Plank* plank2, Plank* invizPlank, int& nrPlanks, int& random, int& random2, int& random3);
 	void planksOutOfVision(int& nrPlanks, MyCamera* camera, Plank* plank, Plank* plank2, Plank* invizPlank);
-	void powerupsPlank(Plank* plank2, Plank* plank, Gas& gas, bool& speedy, int& i, bool& gasMod);
+	void powerupsPlank(Plank* plank2, Plank* plank, Gas& gas, bool& speedy, int& i, bool& gasMod, int& secSpeed, int& secGas);
 }

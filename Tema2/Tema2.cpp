@@ -22,15 +22,19 @@ Tema2::~Tema2()
 
 void Tema2::Init()
 {
-	nrPlanks = 24;
+	nrPlanks = 36;
 	camera = new MyCamera();
-	camera->Set(glm::vec3(0, 1, 10), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+	camera->Set(glm::vec3(-0.25f, 2, 10), glm::vec3(-0.25f, 2, 0), glm::vec3(0, 1, 0));
+	// setarea camerei la pozitia initiala
 
 	projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
+	// setarea perspectivei
 
 	PlankFunc::initPlanks(plank, plank2, invizPlank, nrPlanks, random, random2, random3);
-	sphere.poz = plank[0].poz + glm::vec3(1.5, 0.6, 0);
-	gas.poz = glm::vec3(4, 3, 0);
+	// initializarea platformelor
+
+	sphere.poz = plank[0].poz + glm::vec3(1.6f, 0.6, 0);
+	gas.poz = glm::vec3(3.4f, 3.7f, 0);
 	gas.fuel = 30.0f;
 
 	{
@@ -60,19 +64,19 @@ void Tema2::Init()
 	}
 
 	{
-		Mesh* rect = Object3D::CreateGasRect("rect", gas.poz , 2, glm::vec3(1, 1, 1), false);
+		Mesh* rect = Object3D::CreateGasRect("rect", gas.poz , 3, glm::vec3(1, 1, 1), false);
 		AddMeshToList(rect);
 
-		Mesh* rect100 = Object3D::CreateGasRect2("rect100", gas.poz, 1.99, glm::vec3(0,0.5,0.2), false, 1);
-		Mesh* rect90 = Object3D::CreateGasRect2("rect90", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.9);
-		Mesh* rect80 = Object3D::CreateGasRect2("rect80", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.8);
-		Mesh* rect70 = Object3D::CreateGasRect2("rect70", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.7);
-		Mesh* rect60 = Object3D::CreateGasRect2("rect60", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.6);
-		Mesh* rect50 = Object3D::CreateGasRect2("rect50", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.5);
-		Mesh* rect40 = Object3D::CreateGasRect2("rect40", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.4);
-		Mesh* rect30 = Object3D::CreateGasRect2("rect30", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.3);
-		Mesh* rect20 = Object3D::CreateGasRect2("rect20", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.2);
-		Mesh* rect10 = Object3D::CreateGasRect2("rect10", gas.poz, 1.99, glm::vec3(0, 0.5, 0.2), false, 0.1);
+		Mesh* rect100 = Object3D::CreateGasRect2("rect100", gas.poz, 2.99, glm::vec3(0, 1, 0), false, 1);
+		Mesh* rect90 = Object3D::CreateGasRect2("rect90", gas.poz, 2.99, glm::vec3(0, 1, 0), false, 0.9);
+		Mesh* rect80 = Object3D::CreateGasRect2("rect80", gas.poz, 2.99, glm::vec3(0, 1, 0), false, 0.8);
+		Mesh* rect70 = Object3D::CreateGasRect2("rect70", gas.poz, 2.99, glm::vec3(0, 1, 0), false, 0.7);
+		Mesh* rect60 = Object3D::CreateGasRect2("rect60", gas.poz, 2.99, glm::vec3(0.8, 0.4, 0), false, 0.6);
+		Mesh* rect50 = Object3D::CreateGasRect2("rect50", gas.poz, 2.99, glm::vec3(0.8, 0.4, 0), false, 0.5);
+		Mesh* rect40 = Object3D::CreateGasRect2("rect40", gas.poz, 2.99, glm::vec3(0.8, 0.4, 0), false, 0.4);
+		Mesh* rect30 = Object3D::CreateGasRect2("rect30", gas.poz, 2.99, glm::vec3(0.9, 0, 0), false, 0.3);
+		Mesh* rect20 = Object3D::CreateGasRect2("rect20", gas.poz, 2.99, glm::vec3(0.9, 0, 0), false, 0.2);
+		Mesh* rect10 = Object3D::CreateGasRect2("rect10", gas.poz, 2.99, glm::vec3(0.9, 0, 0), false, 0.1);
 		AddMeshToList(rect100);
 		AddMeshToList(rect90);
 		AddMeshToList(rect80);
@@ -96,8 +100,6 @@ void Tema2::Init()
 
 }  
 	
-
-
 void Tema2::FrameStart()
 {
 
@@ -123,17 +125,69 @@ void Tema2::RenderMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
 	mesh->Render();
 }
 
+void Tema2::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, glm::vec3& color)
+{
+	if (!mesh || !shader || !shader->GetProgramID())
+	{
+		return;
+	}
+
+	// Render an object using the specified shader and the specified position
+	glUseProgram(shader->program);
+
+	// Get shader location for uniform mat4 "Model"
+	GLint modelLocation = glGetUniformLocation(shader->GetProgramID(), "Model");
+
+	// Set shader uniform "Model" to modelMatrix
+	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	// Get shader location for uniform mat4 "View"
+	GLint viewLocation = glGetUniformLocation(shader->GetProgramID(), "View");
+
+	// Set shader uniform "View" to viewMatrix
+	glm::mat4 viewMatrix = camera->GetViewMatrix();
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	// Get shader location for uniform mat4 "Projection"
+	GLint projLocation = glGetUniformLocation(shader->GetProgramID(), "Projection");
+
+	// Set shader uniform "Projection" to projectionMatrix
+	glm::mat4 projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
+	glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+	// Get shader location for "Time"
+	GLint timeLocation = glGetUniformLocation(shader->GetProgramID(), "Time");
+
+	// Set shader uniform "Time" to elapsed time
+	glUniform1f(timeLocation, (GLfloat)Engine::GetElapsedTime());
+
+	GLint locObject = glGetUniformLocation(shader->program, "object_color");
+	glUniform3fv(locObject, 1, glm::value_ptr(color));
+
+	// Draw the object
+	glBindVertexArray(mesh->GetBuffers()->VAO);
+	glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
+}
+
 void Tema2::Update(float deltaTimeSeconds)
 {
 	{ // PLATFORME
+		/*
+			Platformele functioneaza astfel
+			Am doi vectori de platforme, ocupand practic doua randuri
+			Cel de al treilea vector il reprezinta platformele invizibile, folosite
+			pentru a-mi da seama daca sfera(personajul) a iesit din afara scenei
+		*/
 		PlankFunc::planksOutOfVision(nrPlanks, camera, plank, plank2, invizPlank);
 		for (int i = 0; i < nrPlanks; i++) {
-			PlankFunc::powerupsPlank(plank2, plank, gas, speedy, i, gasMod);
+			// generare platforme cu "super-puteri"
+			PlankFunc::powerupsPlank(plank2, plank, gas, speedy, i, gasMod, secondsSpeed, secondsGas);
 
-			// generarea primelor randuri
-			// adica practic cate o coloana pe rand
+			// pozitionarea platformelor
 			modelPlank[i] = glm::mat4(1);
 			modelPlank[i] = Transform3D::Translate(plank[i].poz.x, plank[i].poz.y, plank[i].poz.z);
+
+			// randarea platformelor dupa culoare
 			if (plank[i].color == "purple") {
 				RenderMesh(meshes["platPurple"], shaders["VertexColor"], modelPlank[i]);
 			}
@@ -147,9 +201,11 @@ void Tema2::Update(float deltaTimeSeconds)
 				RenderMesh(meshes["platWhite"], shaders["VertexColor"], modelPlank[i]);
 			}
 
-			// sa se spawneze o singura platforma la start-ul jocului
+			// pozitia platformelor de pe "al doilea rand"
 			modelPlank2[i] = glm::mat4(1);
 			modelPlank2[i] = Transform3D::Translate(plank2[i].poz.x, plank2[i].poz.y, plank2[i].poz.z);
+
+			// randarea platformelor
 			if (plank2[i].color == "purple") {
 				RenderMesh(meshes["platPurple"], shaders["VertexColor"], modelPlank2[i]);
 			}
@@ -164,22 +220,30 @@ void Tema2::Update(float deltaTimeSeconds)
 			}
 		}
 	}
+	
+	// contor secunde pentru platforma orange, verde si galbena
 	GameMechanics::timeForSpeedPowerup(speedy, secondsSpeed);
 	GameMechanics::timeForGasPowerup(gasMod, secondsGas);
-
 	{ // SFERA
 		GameMechanics::movementCameraObjects(sphere, gas, deltaTimeSeconds, speed, camera);
 
 		// saritura
 		SphereFunc::jumpSphere(jump, seconds, jumping, firstPerson, camera, sphere, gas);
 
+		// coliziunea sfera-platforma a celor doua coloane
 		Detection::changeColorWhenTouchedFirstCol(sphere, plank, outsideOfMap, nrPlanks);
 		Detection::changeColorWhenTouched(sphere, plank2, outsideOfMap, nrPlanks);
 		Detection::detectOutOfMap(sphere, invizPlank, outsideOfMap, nrPlanks);
+
+		// iesirea sferei din scena
 		SphereFunc::fallingSphere(sphere, outsideOfMap, firstPerson, camera, fallen);
 
+		// pozitionarea sferei pe scena
 		modelSphere = glm::mat4(1);
 		modelSphere = Transform3D::Translate(sphere.poz.x, sphere.poz.y, sphere.poz.z);
+
+		// daca nu exista vreun powerup in actiune, sa se randeze folosind shader normal
+		// astfel, randez folosind shader-ul facut de mine pentru a-si schimba forma
 		if (!speedy && !gasMod) {
 			RenderMesh(meshes["sphere"], shaders["VertexNormal"], modelSphere);
 		}
@@ -197,12 +261,14 @@ void Tema2::Update(float deltaTimeSeconds)
 
 	{ // GAS
 		
+		// pozitionarea celor doua dreptunghiuri
 		modelInnerGas = modelGas = glm::mat4(1);
 		modelGas *= Transform3D::Translate(gas.poz.x, gas.poz.y, gas.poz.z);
 		modelInnerGas *= Transform3D::Translate(gas.poz.x, gas.poz.y, gas.poz.z);
 		RenderMesh(meshes["rect"], shaders["VertexColor"], modelGas);
 
 		// randarea pe segmente a combustibilului
+		// 70-100 -> verde / 40-60 -> orange / 10-30 rosu
 		if (gas.fuel <= 30.f && gas.fuel >= 27.f) RenderMesh(meshes["rect100"], shaders["VertexColor"], modelInnerGas);
 		if (gas.fuel <= 27.f && gas.fuel >= 24.f) RenderMesh(meshes["rect90"], shaders["VertexColor"], modelInnerGas);
 		if (gas.fuel <= 24.f && gas.fuel >= 21.f) RenderMesh(meshes["rect80"], shaders["VertexColor"], modelInnerGas);
@@ -214,13 +280,14 @@ void Tema2::Update(float deltaTimeSeconds)
 		if (gas.fuel <= 6.f && gas.fuel >= 3.f)   RenderMesh(meshes["rect20"], shaders["VertexColor"], modelInnerGas);
 		if (gas.fuel <= 3.f && gas.fuel >= 0.f)   RenderMesh(meshes["rect10"], shaders["VertexColor"], modelInnerGas);
 	
+		// detectia ca nu mai exista gas
 		GasFunc::outOfFuel(gas);
 	}
 }
 
 void Tema2::FrameEnd()
 {
-	
+
 }
 
 void Tema2::OnInputUpdate(float deltaTime, int mods)
@@ -260,48 +327,4 @@ void Tema2::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 
 void Tema2::OnWindowResize(int width, int height)
 {
-}
-
-void Tema2::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, glm::vec3 &color)
-{
-	if (!mesh || !shader || !shader->GetProgramID())
-	{
-		return;
-	}
-
-	// Render an object using the specified shader and the specified position
-	glUseProgram(shader->program);
-
-	// Get shader location for uniform mat4 "Model"
-	GLint modelLocation = glGetUniformLocation(shader->GetProgramID(), "Model");
-
-	// Set shader uniform "Model" to modelMatrix
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-	// Get shader location for uniform mat4 "View"
-	GLint viewLocation = glGetUniformLocation(shader->GetProgramID(), "View");
-
-	// Set shader uniform "View" to viewMatrix
-	glm::mat4 viewMatrix = camera->GetViewMatrix();
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-
-	// Get shader location for uniform mat4 "Projection"
-	GLint projLocation = glGetUniformLocation(shader->GetProgramID(), "Projection");
-
-	// Set shader uniform "Projection" to projectionMatrix
-	glm::mat4 projectionMatrix = glm::perspective(RADIANS(60), window->props.aspectRatio, 0.01f, 200.0f);
-	glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-	// Get shader location for "Time"
-	GLint timeLocation = glGetUniformLocation(shader->GetProgramID(), "Time");
-
-	GLint locObject = glGetUniformLocation(shader->program, "object_color");
-	glUniform3fv(locObject, 1, glm::value_ptr(color));
-
-	// Set shader uniform "Time" to elapsed time
-	glUniform1f(timeLocation, (GLfloat)Engine::GetElapsedTime());
-
-	// Draw the object
-	glBindVertexArray(mesh->GetBuffers()->VAO);
-	glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
 }
